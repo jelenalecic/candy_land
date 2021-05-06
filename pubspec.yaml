@@ -15,6 +15,7 @@ dependencies:
 
   cupertino_icons: ^1.0.2
   stream_chat_flutter: 2.0.0-nullsafety.3
+  intl: ^0.17.0
 #  stream_chat_flutter_core: 1.5.1
 #  stream_chat: 1.5.2
 

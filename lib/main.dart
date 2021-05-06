@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_stream_io/chat_data.dart';
+import 'package:intl/intl.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
 void main() {
@@ -30,8 +31,7 @@ class _MyAppState extends State<MyApp> {
                 child: CupertinoActivityIndicator(animating: true, radius: 20)))
         : MaterialApp(
             debugShowCheckedModeBanner: false,
-            theme: ThemeData(fontFamily: 'RobotoMono'),
-            builder: (context, widget) {
+            builder: (mainContext, widget) {
               return StreamChat(
                 child: widget,
                 client: ChatData.getInstance.client,
@@ -39,29 +39,23 @@ class _MyAppState extends State<MyApp> {
             },
             home: Builder(
               builder: (BuildContext context) => Scaffold(
+                appBar: AppBar(
+                  backgroundColor: Color(0xFFe973a7),
+                  title: Text('Candy land',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
                 body: ChannelsBloc(
-                  child: ChannelListView(
-                    sort: [SortOption('last_message_at')],
-                    pagination: PaginationParams(
-                      limit: 30,
-                    ),
-                    channelPreviewBuilder:
-                        (BuildContext anotherContext, Channel channel) =>
-                            ChannelPreview(
-                      channel: channel,
-                      onTap: (channel) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return StreamChannel(
-                                channel: channel,
-                                child: ChannelPage(),
-                              );
-                            },
-                          ),
-                        );
-                      },
+                  child: SafeArea(
+                    child: ChannelListView(
+                      padding: EdgeInsets.only(top: 10),
+                      sort: [SortOption('last_message_at')],
+                      pagination: PaginationParams(
+                        limit: 30,
+                      ),
+                      channelPreviewBuilder:
+                          (BuildContext anotherContext, Channel channel) =>
+                              _getCustomTileView(context, channel),
+                      // _getDefaultTileView(context, channel),
                     ),
                   ),
                 ),
@@ -69,33 +63,135 @@ class _MyAppState extends State<MyApp> {
             ),
           );
   }
-}
 
-Widget channelPreviewBuilder(BuildContext context, Channel channel) {
-  final lastMessage = channel.state.messages.reversed
-      .firstWhere((message) => !message.isDeleted);
+  GestureDetector _getCustomTileView(BuildContext context, Channel channel) {
+    int unreadCount = channel.state.unreadCount;
 
-  final subtitle = (lastMessage == null ? "nothing yet" : lastMessage.text);
-  final opacity = channel.state.unreadCount > .0 ? 1.0 : 0.5;
-
-  return ListTile(
-    leading: ChannelImage(
-      channel: channel,
-    ),
-    title: ChannelName(
-      // channel: channel,
-      textStyle: StreamChatTheme.of(context).channelPreviewTheme.title.copyWith(
-            color: Colors.black.withOpacity(opacity),
+    return GestureDetector(
+      onTap: () async {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return StreamChannel(
+                channel: channel,
+                child: ChannelPage(),
+              );
+            },
           ),
-    ),
-    subtitle: Text(subtitle),
-    trailing: channel.state.unreadCount > 0
-        ? CircleAvatar(
-            radius: 10,
-            child: Text(channel.state.unreadCount.toString()),
-          )
-        : SizedBox(),
-  );
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        margin: EdgeInsets.only(bottom: 8, left: 4, right: 4),
+        height: 80,
+        decoration: BoxDecoration(
+            color: unreadCount > 0 ? null : Color(0xFFf0f0f0),
+            gradient: unreadCount > 0
+                ? LinearGradient(
+                    begin: Alignment.bottomLeft,
+                    stops: [0.1, 0.9],
+                    colors: [Color(0xFFa686e7), Color(0xFFe973a7)])
+                : null,
+            borderRadius: BorderRadius.all(Radius.circular(8))),
+        child: Row(
+          children: [
+            ChannelImage(
+              channel: channel,
+              borderRadius: BorderRadius.circular(12),
+              constraints: BoxConstraints.tightFor(
+                height: 48,
+                width: 48,
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ChannelName(
+                    textStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: unreadCount > 0 ? Colors.white : Colors.black),
+                  ),
+                  SizedBox(
+                    height: 4,
+                  ),
+                  _getSubtitle(channel, unreadCount)
+                ],
+              ),
+            ),
+            SizedBox(width: 12),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                getTime(channel, unreadCount),
+                getUnreadCount(unreadCount)
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  ChannelPreview _getDefaultTileView(BuildContext context, Channel channel) {
+    return ChannelPreview(
+      channel: channel,
+      onTap: (channel) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return StreamChannel(
+                channel: channel,
+                child: ChannelPage(),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _getSubtitle(Channel channel, int unreadCount) {
+    final Message lastMessage = channel.state.messages.reversed
+        .firstWhere((message) => !message.isDeleted);
+
+    return Text(
+      lastMessage.text ?? '',
+      maxLines: 1,
+      style: TextStyle(
+          color: unreadCount > 0 ? Color(0xFFcbb7e6) : Color(0xFFa4a4b2),
+          fontWeight: FontWeight.bold),
+    );
+  }
+
+  Widget getTime(Channel channel, int unreadCount) {
+    DateTime time = channel.lastMessageAt;
+    return Text(
+      time != null ? DateFormat('EEEE HH:mm').format(time) : '',
+      style: TextStyle(
+          color: unreadCount > 0 ? Color(0xFFcbb7e6) : Color(0xFFa4a4b2)),
+    );
+  }
+
+  Widget getUnreadCount(int count) {
+    return Container(
+      padding: EdgeInsets.all(10),
+      child: Text(
+        '$count',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+      decoration: new BoxDecoration(
+        color: Color(0xFFdf7df0),
+        shape: BoxShape.circle,
+      ),
+    );
+  }
 }
 
 class ChannelPage extends StatelessWidget {

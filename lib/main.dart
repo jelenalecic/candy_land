@@ -98,72 +98,82 @@ class _MyAppState extends State<MyApp> {
               ),
             );
           },
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            margin: EdgeInsets.only(bottom: 10, left: 8, right: 8),
-            height: 80,
-            decoration: BoxDecoration(
-                color: snapshot.data > 0 ? null : Color(0xFFffffff),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0xFFe973a7).withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 2,
-                    offset: Offset(0, 2), // changes position of shadow
-                  ),
-                ],
-                gradient: snapshot.data > 0
-                    ? LinearGradient(
-                        begin: Alignment.bottomLeft,
-                        stops: [0.1, 0.9],
-                        colors: [Color(0xFFa686e7), Color(0xFFe973a7)])
-                    : null,
-                borderRadius: BorderRadius.all(Radius.circular(8))),
-            child: Row(
-              children: [
-                ChannelImage(
-                  channel: channel,
-                  borderRadius: BorderRadius.circular(12),
-                  constraints: BoxConstraints.tightFor(
-                    height: 48,
-                    width: 48,
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ChannelName(
-                        textStyle: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            color: snapshot.data > 0
-                                ? Colors.white
-                                : Colors.black),
-                      ),
-                      SizedBox(
-                        height: 4,
-                      ),
-                      _getSubtitle(channel, snapshot.data)
-                    ],
-                  ),
-                ),
-                SizedBox(width: 12),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    getTime(channel, snapshot.data),
-                    getUnreadCount(snapshot.data)
-                  ],
-                )
-              ],
-            ),
+          child: AnimatedCrossFade(
+            crossFadeState: snapshot.data > 0
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
+            duration: Duration(milliseconds: 500),
+            firstChild: _getChannelItem(snapshot, channel, true),
+            secondChild: _getChannelItem(snapshot, channel, false),
           ),
         );
       },
+    );
+  }
+
+  Container _getChannelItem(
+      AsyncSnapshot<int> snapshot, Channel channel, bool hasUnread) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      margin: EdgeInsets.only(bottom: 10, left: 8, right: 8),
+      height: 80,
+      decoration: BoxDecoration(
+          color: hasUnread ? null : Color(0xFFffffff),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0xFFe973a7).withOpacity(0.1),
+              spreadRadius: 2,
+              blurRadius: 2,
+              offset: Offset(0, 2),
+            ),
+          ],
+          gradient: hasUnread
+              ? LinearGradient(
+                  begin: Alignment.bottomLeft,
+                  stops: [0.1, 0.9],
+                  colors: [Color(0xFFa686e7), Color(0xFFe973a7)])
+              : null,
+          borderRadius: BorderRadius.all(Radius.circular(8))),
+      child: Row(
+        children: [
+          ChannelImage(
+            channel: channel,
+            borderRadius: BorderRadius.circular(12),
+            constraints: BoxConstraints.tightFor(
+              height: 48,
+              width: 48,
+            ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ChannelName(
+                  textStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: hasUnread ? Colors.white : Colors.black),
+                ),
+                SizedBox(
+                  height: 4,
+                ),
+                _getSubtitle(channel, snapshot.data)
+              ],
+            ),
+          ),
+          SizedBox(width: 12),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              getTime(channel, snapshot.data),
+              getUnreadCount(snapshot.data)
+            ],
+          )
+        ],
+      ),
     );
   }
 

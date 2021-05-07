@@ -38,6 +38,7 @@ class ChatData {
         .then((Event value) async {
       this.client = client;
       createChannels();
+      // await updateChannels();
       await watchChannels();
       onInitialized();
     });
@@ -53,6 +54,11 @@ class ChatData {
     await channelWrappers[1].channel.updatePartial({
       "set": {
         "image": "https://sc04.alicdn.com/kf/HTB1y49dnXkoBKNjSZFEq6zrEVXaX.jpg"
+      }
+    });
+    await channelWrappers[2].channel.updatePartial({
+      "set": {
+        "image": "https://trekbaron.com/wp-content/uploads/2020/06/types-of-beaches-June302020-1-min.jpg"
       }
     });
   }
@@ -72,6 +78,15 @@ class ChatData {
             id: 'fun',
             extraData: {
               'name': 'Fun',
+            },
+          ),
+          false),
+      ChannelWrapper(
+          client.channel(
+            'messaging',
+            id: 'beach_time',
+            extraData: {
+              'name': 'Beach time',
             },
           ),
           false)

@@ -26,3 +26,11 @@ dev_dependencies:
 flutter:
 
   uses-material-design: true
+
+  fonts:
+    - family: Kaushan
+      fonts:
+        - asset: fonts/KaushanScript-Regular.ttf
+    - family: Indie
+      fonts:
+        - asset: fonts/IndieFlower-Regular.ttf

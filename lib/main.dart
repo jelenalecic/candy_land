@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' hide TextTheme;
 import 'package:get_stream_io/chat_data.dart';
-import 'package:intl/intl.dart';
+import 'package:get_stream_io/date_time_utils.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
 void main() {
@@ -35,6 +35,10 @@ class _MyAppState extends State<MyApp> {
               return StreamChat(
                 streamChatThemeData: StreamChatThemeData(
                   textTheme: TextTheme.light(),
+                  messageInputTheme: MessageInputTheme(
+                    inputBackground: Color(0xFFa686e7).withOpacity(0.05),
+                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                  ),
                   colorTheme: ColorTheme.light(
                     //channel image loading background
                     accentBlue: Color(0xFFe973a7),
@@ -197,7 +201,7 @@ class _MyAppState extends State<MyApp> {
   Widget getTime(Channel channel, int unreadCount) {
     DateTime time = channel.lastMessageAt;
     return Text(
-      time != null ? DateFormat('EEEE HH:mm').format(time) : '',
+      time != null ? parseDateTime((time)) : '',
       style: TextStyle(
         color: unreadCount > 0 ? Color(0xFFcbb7e6) : Color(0xFFa4a4b2),
         fontSize: 12,
@@ -274,6 +278,17 @@ class ChannelThread extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: MessageListView(
+              dateDividerBuilder: (DateTime dateTime) => Container(
+                alignment: Alignment.center,
+                child: Text(
+                  parseDayOnly(dateTime),
+                  style: TextStyle(
+                      color: Color(0xff999999),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Indie'),
+                ),
+              ),
               threadBuilder: (_, parentMessage) {
                 return ThreadPage(
                   parent: parentMessage,
@@ -282,7 +297,9 @@ class ChannelThread extends StatelessWidget {
               messageBuilder: _buildCustomBubble,
             ),
           ),
-          MessageInput(),
+          MessageInput(
+            disableAttachments: true,
+          ),
         ],
       ),
     );
@@ -295,26 +312,93 @@ class ChannelThread extends StatelessWidget {
   ) {
     final message = details.message;
     final isCurrentUser = StreamChat.of(context).user.id == message.user.id;
-    final alignment =
-        isCurrentUser ? Alignment.centerLeft : Alignment.centerRight;
+    final crossAxisAlignment =
+        isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start;
+    final mainAxisAlignment =
+        isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;
+
+    List<Widget> rowItems = [
+      Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Color(0xFF999999).withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: UserAvatar(
+          user: message.user,
+        ),
+      ),
+      Flexible(
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 6),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            decoration: BoxDecoration(
+                color: isCurrentUser ? null : Color(0xfff5f5f5),
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
+                    bottomRight:
+                        isCurrentUser ? Radius.zero : Radius.circular(10),
+                    bottomLeft:
+                        isCurrentUser ? Radius.circular(10) : Radius.zero),
+                gradient: isCurrentUser
+                    ? LinearGradient(
+                        begin: Alignment.bottomLeft,
+                        stops: [0.1, 0.9],
+                        colors: [Color(0xFFa686e7), Color(0xFFe973a7)])
+                    : null),
+            child: message.attachments.isNotEmpty &&
+                    message.attachments[0].type == 'giphy'
+                ? SizedBox(
+                    height: 350,
+                    width: 220,
+                    child: GiphyAttachment(
+                      message: message,
+                      attachment: message.attachments[0],
+                    ),
+                  )
+                : Text(
+                    message.text ?? '',
+                    style: TextStyle(
+                        color: isCurrentUser ? Colors.white : Color(0xff707070),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16),
+                  ),
+          ),
+        ),
+      ),
+    ];
+
+    if (isCurrentUser) {
+      rowItems = rowItems.reversed.toList();
+    }
 
     return Container(
-      alignment: alignment,
+      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: Column(
+        crossAxisAlignment: crossAxisAlignment,
         children: [
           Row(
-            children: [
-              UserAvatar(
-                user: message.user,
-              ),
-              Flexible(
-                child: Text(
-                  message.text ?? '',
-                ),
-              ),
-            ],
+            mainAxisAlignment: mainAxisAlignment,
+            children: rowItems,
           ),
-          Text(DateFormat('EEEE HH:mm').format(message.createdAt))
+          Container(
+            margin: EdgeInsets.only(left: 40, right: 40, top: 2),
+            child: Text(
+              parseTimeOnly(message.createdAt),
+              style: TextStyle(
+                  color: Color(0xffbbbbbb),
+                  fontSize: 10,
+                  letterSpacing: 0.8,
+                  fontWeight: FontWeight.bold),
+            ),
+          )
         ],
       ),
     );
@@ -345,5 +429,24 @@ class ThreadPage extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class Giphy extends StatelessWidget {
+  const Giphy({Key key, this.message, this.attachment}) : super(key: key);
+
+  final Message message;
+
+  final Attachment attachment;
+
+  @override
+  Widget build(BuildContext context) {
+    return GiphyAttachment(
+        attachment: attachment,
+        message: message,
+        size: Size(
+          MediaQuery.of(context).size.width * 0.8,
+          MediaQuery.of(context).size.height * 0.3,
+        ));
   }
 }

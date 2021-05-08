@@ -70,7 +70,6 @@ class _MyAppState extends State<MyApp> {
                       channelPreviewBuilder:
                           (BuildContext anotherContext, Channel channel) =>
                               _getCustomTileView(context, channel),
-                      // _getDefaultTileView(context, channel),
                     ),
                   ),
                 ),
@@ -92,7 +91,7 @@ class _MyAppState extends State<MyApp> {
                 builder: (context) {
                   return StreamChannel(
                     channel: channel,
-                    child: ChannelPage(),
+                    child: ChannelThread(),
                   );
                 },
               ),
@@ -177,25 +176,6 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  ChannelPreview _getDefaultTileView(BuildContext context, Channel channel) {
-    return ChannelPreview(
-      channel: channel,
-      onTap: (channel) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return StreamChannel(
-                channel: channel,
-                child: ChannelPage(),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
   Widget _getSubtitle(Channel channel, int unreadCount) {
     String lastMsgString = '';
 
@@ -247,21 +227,121 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-class ChannelPage extends StatelessWidget {
-  const ChannelPage({
+class ChannelThread extends StatelessWidget {
+  const ChannelThread({
     Key key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: ChannelHeader(),
+      appBar: AppBar(
+        backgroundColor: Color(0xFFa686e7),
+        title: ChannelName(
+          textStyle: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Indie',
+              letterSpacing: 2,
+              fontSize: 24),
+        ),
+        leading: BackButton(
+          color: Colors.white,
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        actions: [
+          Container(
+            margin: EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0xFF222222).withOpacity(0.2),
+                  spreadRadius: 1,
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ChannelImage(
+              borderRadius: BorderRadius.circular(24),
+              constraints: BoxConstraints.tightFor(width: 44),
+            ),
+          )
+        ],
+      ),
       body: Column(
         children: <Widget>[
           Expanded(
-            child: MessageListView(),
+            child: MessageListView(
+              threadBuilder: (_, parentMessage) {
+                return ThreadPage(
+                  parent: parentMessage,
+                );
+              },
+              messageBuilder: _buildCustomBubble,
+            ),
           ),
           MessageInput(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomBubble(
+    BuildContext context,
+    MessageDetails details,
+    List<Message> messages,
+  ) {
+    final message = details.message;
+    final isCurrentUser = StreamChat.of(context).user.id == message.user.id;
+    final alignment =
+        isCurrentUser ? Alignment.centerLeft : Alignment.centerRight;
+
+    return Container(
+      alignment: alignment,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              UserAvatar(
+                user: message.user,
+              ),
+              Flexible(
+                child: Text(
+                  message.text ?? '',
+                ),
+              ),
+            ],
+          ),
+          Text(DateFormat('EEEE HH:mm').format(message.createdAt))
+        ],
+      ),
+    );
+  }
+}
+
+class ThreadPage extends StatelessWidget {
+  final Message parent;
+
+  ThreadPage({
+    Key key,
+    this.parent,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: MessageListView(
+              parentMessage: parent,
+            ),
+          ),
+          MessageInput(
+            parentMessage: parent,
+          ),
         ],
       ),
     );

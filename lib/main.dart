@@ -4,6 +4,8 @@ import 'package:get_stream_io/chat_data.dart';
 import 'package:get_stream_io/date_time_utils.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
+final String customFontFamily = 'Kaushan';
+
 void main() {
   runApp(MyApp());
 }
@@ -36,9 +38,24 @@ class _MyAppState extends State<MyApp> {
                 streamChatThemeData: StreamChatThemeData(
                   textTheme: TextTheme.light(),
                   messageInputTheme: MessageInputTheme(
-                    inputBackground: Color(0xFFa686e7).withOpacity(0.05),
-                    borderRadius: BorderRadius.all(Radius.circular(4)),
-                  ),
+                      inputBackground: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(4)),
+                      inputTextStyle: TextStyle(
+                        color: Color(0xff555555),
+                        fontSize: 16.0,
+                      ),
+                      inputDecoration: InputDecoration(
+                        hintStyle: TextStyle(
+                          fontSize: 16.0,
+                          color: Color(0xff777777),
+                        ),
+                      ),
+                      activeBorderGradient: LinearGradient(
+                          begin: Alignment.bottomLeft,
+                          colors: [Color(0xFFe973a7), Color(0xFFe973a7)]),
+                      idleBorderGradient: LinearGradient(
+                          begin: Alignment.bottomLeft,
+                          colors: [Color(0xffcccccc),Color(0xffcccccc)])),
                   colorTheme: ColorTheme.light(
                     //channel image loading background
                     accentBlue: Color(0xFFe973a7),
@@ -56,7 +73,7 @@ class _MyAppState extends State<MyApp> {
                   title: Text('Candy land',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontFamily: 'Indie',
+                          fontFamily: customFontFamily,
                           letterSpacing: 2,
                           fontSize: 28)),
                 ),
@@ -124,7 +141,7 @@ class _MyAppState extends State<MyApp> {
           color: hasUnread ? null : Color(0xFFffffff),
           boxShadow: [
             BoxShadow(
-              color: Color(0xFFe973a7).withOpacity(0.1),
+              color: Color(0xFFa686e7).withOpacity(0.1),
               spreadRadius: 2,
               blurRadius: 2,
               offset: Offset(0, 2),
@@ -244,7 +261,7 @@ class ChannelThread extends StatelessWidget {
         title: ChannelName(
           textStyle: TextStyle(
               fontWeight: FontWeight.bold,
-              fontFamily: 'Indie',
+              fontFamily: customFontFamily,
               letterSpacing: 2,
               fontSize: 24),
         ),
@@ -258,9 +275,10 @@ class ChannelThread extends StatelessWidget {
           Container(
             margin: EdgeInsets.all(6),
             decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(20)),
               boxShadow: [
                 BoxShadow(
-                  color: Color(0xFF222222).withOpacity(0.2),
+                  color: Color(0xFF222222).withOpacity(0.5),
                   spreadRadius: 1,
                   blurRadius: 8,
                   offset: Offset(0, 2),
@@ -286,7 +304,7 @@ class ChannelThread extends StatelessWidget {
                       color: Color(0xff999999),
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Indie'),
+                      fontFamily: customFontFamily),
                 ),
               ),
               threadBuilder: (_, parentMessage) {
@@ -299,6 +317,22 @@ class ChannelThread extends StatelessWidget {
           ),
           MessageInput(
             disableAttachments: true,
+            activeSendButton: Padding(
+              padding: EdgeInsets.all(8),
+              child: Icon(
+                Icons.send_rounded,
+                size: 32,
+                color: Color(0xFFe973a7),
+              ),
+            ),
+            idleSendButton: Padding(
+              padding: EdgeInsets.all(8),
+              child: Icon(
+                Icons.send_rounded,
+                size: 32,
+                color: Color(0xFFbbbbbb),
+              ),
+            ),
           ),
         ],
       ),
@@ -320,9 +354,10 @@ class ChannelThread extends StatelessWidget {
     List<Widget> rowItems = [
       Container(
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(20)),
           boxShadow: [
             BoxShadow(
-              color: Color(0xFF999999).withOpacity(0.2),
+              color: Color(0xFF999999).withOpacity(0.6),
               spreadRadius: 1,
               blurRadius: 4,
               offset: Offset(0, 2),
@@ -356,12 +391,13 @@ class ChannelThread extends StatelessWidget {
             child: message.attachments.isNotEmpty &&
                     message.attachments[0].type == 'giphy'
                 ? SizedBox(
-                    height: 350,
-                    width: 220,
                     child: GiphyAttachment(
-                      message: message,
-                      attachment: message.attachments[0],
-                    ),
+                        message: message,
+                        attachment: message.attachments[0],
+                        size: Size(
+                          MediaQuery.of(context).size.width * 0.8,
+                          MediaQuery.of(context).size.height * 0.3,
+                        )),
                   )
                 : Text(
                     message.text ?? '',
@@ -429,24 +465,5 @@ class ThreadPage extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class Giphy extends StatelessWidget {
-  const Giphy({Key key, this.message, this.attachment}) : super(key: key);
-
-  final Message message;
-
-  final Attachment attachment;
-
-  @override
-  Widget build(BuildContext context) {
-    return GiphyAttachment(
-        attachment: attachment,
-        message: message,
-        size: Size(
-          MediaQuery.of(context).size.width * 0.8,
-          MediaQuery.of(context).size.height * 0.3,
-        ));
   }
 }

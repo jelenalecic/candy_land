@@ -8,6 +8,7 @@ DateFormat formatTimeDateLiveSessions = DateFormat('d MMM yyyy, h:mm a');
 DateFormat formatDateLiveSessions = DateFormat('d MMM yyyy');
 
 String parseDateTime(DateTime dateTime) {
+  dateTime = dateTime.toLocal();
 
   final DateTime now = DateTime.now();
 
@@ -26,12 +27,13 @@ String parseDateTime(DateTime dateTime) {
   }
 }
 
-String parseTimeOnly(DateTime dateTime){
+String parseTimeOnly(DateTime dateTime) {
+  dateTime = dateTime.toLocal();
   return formatTime.format(dateTime);
 }
 
 String parseDayOnly(DateTime dateTime) {
-
+  dateTime = dateTime.toLocal();
   final DateTime now = DateTime.now();
 
   final DateTime lastMidnight = DateTime(now.year, now.month, now.day);

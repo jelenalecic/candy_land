@@ -96,7 +96,7 @@ class ChannelThread extends StatelessWidget {
       MessageDetails details,
       List<Message> messages,
       ) {
-    final message = details.message;
+    final Message message = details.message;
     final isCurrentUser = StreamChat.of(context).user.id == message.user.id;
     final crossAxisAlignment =
     isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start;

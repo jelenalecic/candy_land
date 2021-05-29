@@ -31,34 +31,33 @@ class _MyAppState extends State<MyApp> {
         ? Container(
             color: Colors.white,
             child: Center(
-                child: CupertinoActivityIndicator(animating: true, radius: 20)))
+                child: CupertinoActivityIndicator(
+              animating: true,
+              radius: 20,
+            )))
         : MaterialApp(
             debugShowCheckedModeBanner: false,
             builder: (_, widget) {
               return StreamChat(
-                streamChatThemeData: generateTheme(),
+                streamChatThemeData: customThemeData,
                 child: widget,
                 client: ChatData.getInstance.client,
               );
             },
-            home: Builder(
-              builder: (BuildContext context) => Scaffold(
-                backgroundColor: Colors.white,
-                appBar: AppBar(
-                  backgroundColor: Color(0xFFe973a7),
-                  title: Text('Candy land',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontFamily: customFontFamily,
-                          letterSpacing: 2,
-                          fontSize: 28)),
-                ),
-                body: ChannelsBloc(
-                  child: SafeArea(
-                    child: ListOfChannels(),
-                  ),
+            home: Scaffold(
+              backgroundColor: Colors.white,
+              appBar: AppBar(
+                backgroundColor: Color(0xFFe973a7),
+                title: Text(
+                  'Candy land',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: customFontFamily,
+                      letterSpacing: 2,
+                      fontSize: 28),
                 ),
               ),
+              body: ListOfChannels(),
             ),
           );
   }

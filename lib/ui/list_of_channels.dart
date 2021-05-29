@@ -6,21 +6,19 @@ import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 class ListOfChannels extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChannelListView(
-      padding: EdgeInsets.only(top: 10),
-      sort: [SortOption('last_message_at')],
-      pagination: PaginationParams(
-        limit: 30,
+    return ChannelsBloc(
+      child: ChannelListView(
+        padding: EdgeInsets.only(top: 10),
+        sort: [SortOption('last_message_at')],
+        pagination: PaginationParams(limit: 30),
+        separatorBuilder: (_, __) => Container(height: 0),
+        channelPreviewBuilder: (BuildContext anotherContext, Channel channel) =>
+            getCustomChannelItem(context, channel),
       ),
-      separatorBuilder: (_, __) => Container(
-        height: 0,
-      ),
-      channelPreviewBuilder: (BuildContext anotherContext, Channel channel) =>
-          _getCustomTileView(context, channel),
     );
   }
 
-  Widget _getCustomTileView(BuildContext context, Channel channel) {
+  Widget getCustomChannelItem(BuildContext context, Channel channel) {
     return StreamBuilder<int>(
       stream: channel.state?.unreadCountStream,
       initialData: channel.state?.unreadCount,
@@ -32,9 +30,7 @@ class ListOfChannels extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) {
                   return StreamChannel(
-                    channel: channel,
-                    child: ChannelThread(),
-                  );
+                      channel: channel, child: ChannelThread());
                 },
               ),
             );
@@ -44,15 +40,15 @@ class ListOfChannels extends StatelessWidget {
                 ? CrossFadeState.showFirst
                 : CrossFadeState.showSecond,
             duration: Duration(milliseconds: 500),
-            firstChild: _getChannelItem(snapshot, channel, true),
-            secondChild: _getChannelItem(snapshot, channel, false),
+            firstChild: channelView(snapshot, channel, true),
+            secondChild: channelView(snapshot, channel, false),
           ),
         );
       },
     );
   }
 
-  Container _getChannelItem(
+  Container channelView(
       AsyncSnapshot<int> snapshot, Channel channel, bool hasUnread) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12),
@@ -62,11 +58,10 @@ class ListOfChannels extends StatelessWidget {
           color: hasUnread ? null : Color(0xFFffffff),
           boxShadow: [
             BoxShadow(
-              color: Color(0xFFa686e7).withOpacity(0.1),
-              spreadRadius: 2,
-              blurRadius: 2,
-              offset: Offset(0, 2),
-            ),
+                color: Color(0xFFa686e7).withOpacity(0.1),
+                spreadRadius: 2,
+                blurRadius: 2,
+                offset: Offset(0, 2))
           ],
           gradient: hasUnread
               ? LinearGradient(
@@ -97,10 +92,8 @@ class ListOfChannels extends StatelessWidget {
                       fontSize: 15,
                       color: hasUnread ? Colors.white : Colors.black),
                 ),
-                SizedBox(
-                  height: 4,
-                ),
-                _getSubtitle(channel, snapshot.data)
+                SizedBox(height: 4),
+                getSubtitle(channel, snapshot.data)
               ],
             ),
           ),
@@ -109,7 +102,7 @@ class ListOfChannels extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              getTime(channel, snapshot.data),
+              getTimeDate(channel, snapshot.data),
               getUnreadCount(snapshot.data)
             ],
           )
@@ -118,7 +111,7 @@ class ListOfChannels extends StatelessWidget {
     );
   }
 
-  Widget _getSubtitle(Channel channel, int unreadCount) {
+  Widget getSubtitle(Channel channel, int unreadCount) {
     String lastMsgString = '';
 
     if (channel.state.messages.length > 0) {
@@ -127,23 +120,20 @@ class ListOfChannels extends StatelessWidget {
       lastMsgString = lastMessage.text ?? '';
     }
 
-    return Text(
-      lastMsgString,
-      maxLines: 1,
-      style: TextStyle(
-          color: unreadCount > 0 ? Color(0xFFcbb7e6) : Color(0xFFa4a4b2),
-          fontWeight: FontWeight.bold),
-    );
+    return Text(lastMsgString,
+        maxLines: 1,
+        style: TextStyle(
+            color: unreadCount > 0 ? Color(0xFFcbb7e6) : Color(0xFFa4a4b2),
+            fontWeight: FontWeight.bold));
   }
 
-  Widget getTime(Channel channel, int unreadCount) {
+  Widget getTimeDate(Channel channel, int unreadCount) {
     DateTime time = channel.lastMessageAt;
     return Text(
       time != null ? parseDateTime((time)) : '',
       style: TextStyle(
-        color: unreadCount > 0 ? Color(0xFFcbb7e6) : Color(0xFFa4a4b2),
-        fontSize: 12,
-      ),
+          color: unreadCount > 0 ? Color(0xFFcbb7e6) : Color(0xFFa4a4b2),
+          fontSize: 12),
     );
   }
 
@@ -153,16 +143,13 @@ class ListOfChannels extends StatelessWidget {
             alignment: Alignment.center,
             padding: EdgeInsets.all(10),
             height: 40,
-            child: Text(
-              '$count',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
+            child: Text('$count',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
             decoration: new BoxDecoration(
               color: Color(0xFFdf7df0),
               shape: BoxShape.circle,
-            ),
-          )
+            ))
         : SizedBox(
             height: 40,
           );

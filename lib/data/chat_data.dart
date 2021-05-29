@@ -2,6 +2,8 @@ import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
 const String apiKey = 'dt6qyrp9u87z';
 
+//token generator https://getstream.io/chat/docs/react/token_generator/?q=generate%20User%20token
+
 final ChatUser user1 = ChatUser(
     'JayDee',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiSmF5RGVlIn0.zCCv8yzo5NClk96-1PCpZ40wQ3FCinGpsrq5eHTBcgs',
